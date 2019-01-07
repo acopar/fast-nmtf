@@ -4,3 +4,5 @@ dependencies:
   - numpy
   - cython
   - scipy
+  - matplotlib
+  - seaborn

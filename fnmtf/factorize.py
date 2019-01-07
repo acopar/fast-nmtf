@@ -30,13 +30,13 @@ def pprint(X):
 
 def main():
     parser = argparse.ArgumentParser(description='fast-nmtf')
-    parser.add_argument('-i', '--iterations', type=int, default=10, help="Maximum number of iterations.")
+    parser.add_argument('-i', '--iterations', type=int, default=20, help="Maximum number of iterations.")
     parser.add_argument('-m', '--min-iter', type=int, default=-1, help="Specify minimum number of iterations.")
     parser.add_argument('-t', '--technique', default='', help="Optimization technique (mu, cod, als, pg)")
     parser.add_argument('-k', '--k', default='20', help="Factorization rank")
     parser.add_argument('-k2', '--k2', default='', help="Factorization rank (column dimension)")
     parser.add_argument('-p', '--parallel', type=int, default=-1, help="Number of MKL threads, max=nproc/2")
-    parser.add_argument('-S', '--seed', default='42', help="Random seed")
+    parser.add_argument('-S', '--seed', default='0', help="Random seed")
     parser.add_argument('-e', '--epsilon', default=6, 
         help="Convergence criteria: relative difference in function is less than 10^(-epsilon)")
     
@@ -109,7 +109,7 @@ def main():
                     'seed': seed, 'method': 'nmtf', 'technique': t, 
                     'max_iter': max_iter, 'min_iter': min_iter, 
                     'verbose': args.verbose, 'store_history': True, 'store_results': True, 
-                    'basename': basedata, 'label': "%s-p6-10" % basedata}
+                    'basename': basedata, 'label': "%s" % basedata}
                 function_dict[t](params)
 
 

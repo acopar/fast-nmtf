@@ -41,6 +41,27 @@ The following optimization techniques can be set with option ``-t``.:
 - pg: projected gradient
 - cod: coordinate descent
 
+### Reproduce results ###
+
+To run the experiment, where each dataset is run on each of the optimization techniques, run the following commands. This may take hours or even days depending on your configuration.
+
+```sh
+    bash scripts/full.sh
+```
+
+There is a shorter version of the experiments, which has lower threshould for convergence (epsilon=10^-5), max iterations set to 2000.
+
+```sh
+   bash scripts/short.sh
+```
+
+After the experiments are done, you can visualize the output using the following two commands:
+
+```sh
+    python fnmtf/analyze.py
+    python fnmtf/visualize.py
+```
+
 #### Command line arguments
 
 - -t [arg]: Optimization technique [mu, als, pg, cod]
@@ -48,5 +69,7 @@ The following optimization techniques can be set with option ``-t``.:
 - -k [arg]: factorization rank, positive integer
 - -p [arg]: number of parallel workers
 - -S [arg]: random seed
+- -e [arg]: stopping criteria threshould (higher means more iterations), default=6
+- -m [arg]: minimum number of iterations
 - data: last argument is path to the dataset (required)
 
