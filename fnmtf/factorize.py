@@ -47,11 +47,7 @@ def main():
     if data is None:
         raise Exception("Unable to open file: %s" % filename)
 
-    print(type(data))
     X = data
-    #X = np.array([[5,0,4,3], [1,3,3,1], [3,3,0,2], [2,3,0,2], [4,3,0,2]])
-    #basedata='test'
-    
     basedata = os.path.splitext(os.path.basename(filename))[0]
     
     #data = data.todense()
@@ -113,7 +109,6 @@ def main():
                 params = {'engine': engine, 'X': X, 'k': k, 'k2': k, 'seed': seed, 'method': 'nmtf', 'technique': t, 
                     'max_iter': max_iter, 'verbose': args.verbose, 'store_results': True, 'basename': basedata, 
                     'label': "%s-vanilla" % basedata}
-#                factors, hist = function_dict[t](params)
                 tasks.append(Task(function_dict[t], params))
     
     model = Model()

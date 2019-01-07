@@ -1,0 +1,6 @@
+name: fast-nmtf
+dependencies:
+  - python=3.6
+  - numpy
+  - cython
+  - scipy
