@@ -6,7 +6,7 @@ import numpy as np
 from common import *
 
 @tri_factorization
-def nmtf_als(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, verbose=False):
+def nmtf_als(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, min_iter=1, verbose=False):
     err_history = []
     globals().update(engine.methods())
     timer = Timer()
@@ -35,7 +35,6 @@ def nmtf_als(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, verbose=Fals
             KK15 = inverse(KK14)
             NK16 = dot(NK13, KK15)
             U = project(NK16)
-            #U = np.nan_to_num(U)
             
             timer.split('Xt')
             MK18 = bigdot(Xt, U)
@@ -47,7 +46,6 @@ def nmtf_als(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, verbose=Fals
             LL23 = inverse(LL22)
             ML24 = dot(ML19, LL23)
             V = project(ML24)
-            #V = np.nan_to_num(V)
             
             timer.split('S')
             KK26 = inverse(KK20)
@@ -57,12 +55,15 @@ def nmtf_als(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, verbose=Fals
             KL30 = dot(KK26, KL27)
             KL31 = dot(KL30, LL29)
             S = project(KL31)
-            #S = np.nan_to_num(S)
-            #print U.sum(), V.sum(), S.sum()
-    
+            
+            if check_stop(err_history) > 0:
+                print("Stopping after %d iterations" % it)
+                break
+        
     except ValueError:
         print("Warning: ValueError caught")
     
-    print("Timer", str(timer))
+    if verbose:
+        print("Timer", str(timer))
     factors = U, S, V
     return factors, err_history

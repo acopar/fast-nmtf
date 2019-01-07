@@ -6,7 +6,7 @@ import scipy.linalg as la
 from common import *
 
 @tri_factorization
-def nmtf_pg(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, verbose=False):
+def nmtf_pg(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, min_iter=1, verbose=False):
     err_history = []
     globals().update(engine.methods())
     timer = Timer()
@@ -95,7 +95,12 @@ def nmtf_pg(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, verbose=False
         KL34 = multiply(Ps, ns)
         KL33 = sub(S, KL34)
         S = project(KL33)
-    
-    print("Timer", str(timer))
+
+        if check_stop(err_history) > 0:
+            print("Stopping after %d iterations" % it)
+            break
+
+    if verbose:
+        print("Timer", str(timer))
     factors = U, S, V
     return factors, err_history

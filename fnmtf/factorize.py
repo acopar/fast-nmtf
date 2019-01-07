@@ -10,7 +10,6 @@ import scipy.linalg as la
 
 from scipy.sparse import csr_matrix, csc_matrix
 from loader import *
-from worker import *
 from common import *
 from engine import Engine
 
@@ -32,10 +31,14 @@ def pprint(X):
 def main():
     parser = argparse.ArgumentParser(description='fast-nmtf')
     parser.add_argument('-i', '--iterations', type=int, default=10, help="Maximum number of iterations.")
+    parser.add_argument('-m', '--min-iter', type=int, default=-1, help="Specify minimum number of iterations.")
     parser.add_argument('-t', '--technique', default='', help="Optimization technique (mu, cod, als, pg)")
     parser.add_argument('-k', '--k', default='20', help="Factorization rank")
-    parser.add_argument('-p', '--parallel', type=int, default=6, help="Number of workers")
+    parser.add_argument('-k2', '--k2', default='', help="Factorization rank (column dimension)")
+    parser.add_argument('-p', '--parallel', type=int, default=-1, help="Number of MKL threads, max=nproc/2")
     parser.add_argument('-S', '--seed', default='42', help="Random seed")
+    parser.add_argument('-e', '--epsilon', default=6, 
+        help="Convergence criteria: relative difference in function is less than 10^(-epsilon)")
     
     parser.add_argument('-V', '--verbose', action="store_true", help="Print error function in each iteration")
     parser.add_argument('data', nargs='*', help='Other args')
@@ -50,22 +53,15 @@ def main():
     X = data
     basedata = os.path.splitext(os.path.basename(filename))[0]
     
-    #data = data.todense()
-    #print type(data)
-    #X = data
-    print("Shape", X.shape)
+    print("Loaded %s, shape" % filename, X.shape)
     sparse = False
     if type(data) == csr_matrix:
         sparse = True
-    #    X = np.array(X, dtype=dtype, order='C')
-        #X = normalize_data(X)
-    
+
     # double
     X = X.astype(np.float64)
-    #if args.sparse:
-    #    X = csr_matrix(X)
     
-    np.random.seed(42)
+    np.random.seed(0)
     max_iter = args.iterations
     
     function_dict = {
@@ -76,56 +72,45 @@ def main():
     }
     
     method_list = ['nmtf']
+    
     technique_list = args.technique.split(',')
     if args.technique == '':
         technique_list = ['mu', 'cod', 'als', 'pg']
         
     k_list = [int(s) for s in args.k.split(',')]
+    k2_list = None
+    if args.k2:
+        k2_list = [int(s) for s in args.k2.split(',')]
     seed_list = [int(s) for s in args.seed.split(',')]
     
-    if len(k_list) > 1 and len(seed_list) > 1:
-        print("Cannot use both multiple K and seed parameters")
-        print("Use either K or seed as a list")
-        raise Exception("Too many parameters exception")
+    engine = Engine(epsilon=args.epsilon, parallel=args.parallel)
     
-    XX = None
-    if type(X) == csr_matrix:
-        XX = X.power(2)
-        TrX = XX.sum()
-    else:
-        XX = np.multiply(X, X)
-        TrX = np.sum(XX)
-    engine = Engine()
-    tasks = []
     conv_trace = {}
     for t in technique_list:
         if t not in function_dict:
             print("Technique %s is not available" % t)
             continue
         
+        # prevent multiplicative updates from stopping too early
+        min_iter = args.min_iter
+        if min_iter == -1 and t == 'mu':
+            min_iter = 100
+        elif min_iter == -1:
+            min_iter = 1
+        
         conv_trace[t] = []
-        for k in k_list:
+        for ik, k in enumerate(k_list):
+            if k2_list == None:
+                k2 = k
+            else:
+                k2 = k2_list[ik]
             for seed in seed_list:
-                params = {'engine': engine, 'X': X, 'k': k, 'k2': k, 'seed': seed, 'method': 'nmtf', 'technique': t, 
-                    'max_iter': max_iter, 'verbose': args.verbose, 'store_results': True, 'basename': basedata, 
-                    'label': "%s-vanilla" % basedata}
-                tasks.append(Task(function_dict[t], params))
-    
-    model = Model()
-    mt = MainThread(model, n_workers=args.parallel)
-    mt.start()
-    for task in tasks:
-        model.q.put(task)
-    model.q.put(0)
-    
-    try:
-        while mt.isAlive():
-            time.sleep(1)
-    except KeyboardInterrupt:
-        print("KeyboardInterrupt")
-        mt.stop()
-    
-    mt.join()
+                params = {'engine': engine, 'X': X, 'k': k, 'k2': k2, 
+                    'seed': seed, 'method': 'nmtf', 'technique': t, 
+                    'max_iter': max_iter, 'min_iter': min_iter, 
+                    'verbose': args.verbose, 'store_history': True, 'store_results': True, 
+                    'basename': basedata, 'label': "%s-p6-10" % basedata}
+                function_dict[t](params)
 
 
 if __name__ == '__main__':

@@ -5,7 +5,7 @@ import time
 from common import *
 
 @tri_factorization
-def nmtf_mu(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, verbose=False):
+def nmtf_mu(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, min_iter=1, verbose=False):
     err_history = []
     globals().update(engine.methods())
     timer = Timer()
@@ -35,8 +35,8 @@ def nmtf_mu(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, verbose=False
         KK14 = dot(KM5, KM5.T)
         NK15 = dot(U, KK14)
         NK16 = divide(NK13, NK15)
-        NK17 = sqrt(NK16)
-        U = multiply(U, NK17)
+        #NK17 = sqrt(NK16)
+        U = multiply(U, NK16)
         
         timer.split('Xt')
         MK19 = bigdot(Xt, U)
@@ -46,17 +46,22 @@ def nmtf_mu(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, verbose=False
         KL22 = dot(KK21, S)
         ML23 = dot(KM5.T, KL22)
         ML24 = divide(ML20, ML23)
-        ML25 = sqrt(ML24)
-        V = multiply(V, ML25)
+        #ML25 = sqrt(ML24)
+        V = multiply(V, ML24)
         
         timer.split('S')
         KL27 = dot(MK19.T, V)
         LL28 = dot(V.T, V)
         KL29 = dot(KL22, LL28)
         KL30 = divide(KL27, KL29)
-        KL31 = sqrt(KL30)
-        S = multiply(S, KL31)
+        #KL31 = sqrt(KL30)
+        S = multiply(S, KL30)
+        
+        if it > min_iter and check_stop(err_history) > 0:
+            print("Stopping after %d iterations" % it)
+            break
     
-    print("Timer", str(timer))
+    if verbose:    
+        print("Timer", str(timer))
     factors = U, S, V
     return factors, err_history

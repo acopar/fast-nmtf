@@ -5,7 +5,7 @@ import time
 from common import *
 
 @tri_factorization
-def nmtf_cod(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, verbose=False):
+def nmtf_cod(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, min_iter=1, verbose=False):
     n = X.shape[0]
     m = X.shape[1]
     err_history = []
@@ -95,7 +95,11 @@ def nmtf_cod(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, verbose=Fals
                 S[i,j] = AA36
         """
         
-    engine.timer.stop
-    print(str(timer))
+        if check_stop(err_history) > 0:
+            print("Stopping after %d iterations" % it)
+            break
+    
+    if verbose:
+        print(str(timer))
     factors = U, S, V
     return factors, err_history

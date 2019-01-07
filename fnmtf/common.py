@@ -7,28 +7,23 @@ import time
 import argparse
 import numpy as np
 import scipy.linalg as la
-import threading
 
 from scipy.sparse import csr_matrix, csc_matrix
 from loader import *
-from worker import *
 
 def nprand(x, y, dtype=np.float64, seed=42):
-    # Use floats for speed
-    np.random.seed(seed)
     X = np.random.rand(x, y)
     X = np.array(X, dtype=dtype, order='C')
-    #print X.shape, X.sum()
     return X
 
 
 def dump_history(params, err_history):
-    filename = '../results/%s/%s_%s/%d.csv' % (params['label'], params['method'], params['technique'], params['k'])
+    filename = 'results/%s/%s/%d_%d.csv' % (params['label'], params['technique'], params['k'], params['seed'])
     ensure_dir(filename)
     fp = open(filename, 'w')
     writer = csv.writer(fp, delimiter=',')
     for i, h in enumerate(err_history):
-        writer.writerow([params['method'], params['technique'], i, h, params['k']])
+        writer.writerow([params['method'], params['technique'], i, h, params['k'], params['seed']])
     fp.close()
 
 def validate_factors(factors):
@@ -38,19 +33,19 @@ def validate_factors(factors):
 
 
 def tri_factorization(func):
-    #def new_f(X, k=20, seed=42, max_iter=10, verbose=False):
     def new_f(params):
         X = params['X']
         seed = params['seed']
         k = params['k']
         k2 =params['k2']
         max_iter = params['max_iter']
+        min_iter = params['min_iter']
         verbose = params['verbose']
         method = params['method']
         engine = params['engine']
         technique = params['technique']
         
-        print("Task started: (%s, %s)" % (method, technique))
+        print("Task started: (technique=%s, k=%d, seed=%d)" % (technique, k, seed))
         np.random.seed(seed)
         n, m = X.shape
         U = nprand(n, k, dtype=X.dtype)
@@ -66,18 +61,20 @@ def tri_factorization(func):
             TrX = np.sum(XX)
             Xt = np.array(X.T, order='C')
         t0 = time.time()
-        #locals().update(engine.methods())
-        #globals().update(engine.methods())
         engine.clean()
         
-        factors, err_history = func(engine, X, Xt, U, S, V, TrX, k=k, k2=k2, max_iter=max_iter, verbose=verbose)
-        print("Task (%s) finished in:", (technique, k, time.time()-t0))
-        print("Engine Mflops/iteration:", float(engine.operations/max_iter)/1000000, float(engine.soperations/max_iter)/1000000)
-        print("Engine timer:", str(engine.timer))
+        factors, err_history = func(engine, X, Xt, U, S, V, TrX, k=k, k2=k2, max_iter=max_iter, min_iter=min_iter, verbose=verbose)
+        print("Task (%s, k=%dx%d) finished in:" % (technique, k, k2), time.time()-t0)
+        if engine.profile and verbose:
+            print("Engine Mflops/iteration:", float(engine.operations/max_iter)/1000000, float(engine.soperations/max_iter)/1000000)
+            print("Engine timer:", str(engine.timer))
+        #print("Engine timer:", str(engine.timer))
         validate_factors(factors)
         
-        if params['store_results']:
+        if params['store_history']:
             dump_history(params, err_history[1:])
+        
+        if params['store_results']:
             dump_file('../results/%s/%s.pkl' % (params['label'], technique), factors)
         
         return factors, err_history
