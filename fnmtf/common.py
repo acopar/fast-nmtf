@@ -26,6 +26,14 @@ def dump_history(params, err_history):
         writer.writerow([params['method'], params['technique'], i, h, params['k'], params['seed']])
     fp.close()
 
+def dump_runtime(params, runtime):
+    filename = 'results/%s/%s/%d_%d.csv' % (params['label'], params['technique'], params['k'], params['seed'])
+    ensure_dir(filename)
+    fp = open(filename, 'w')
+    writer = csv.writer(fp, delimiter=',')
+    writer.writerow([params['method'], params['technique'], runtime, params['k'], params['seed'], params['max_iter'], params['min_iter'], params['epsilon']])
+    fp.close()
+
 def validate_factors(factors):
     for f in factors:
         if np.any(f < 0):
@@ -46,6 +54,7 @@ def tri_factorization(func):
         technique = params['technique']
         
         print("Task started: (technique=%s, k=%d, seed=%d)" % (technique, k, seed))
+        
         np.random.seed(seed)
         n, m = X.shape
         U = nprand(n, k, dtype=X.dtype)
@@ -64,15 +73,17 @@ def tri_factorization(func):
         engine.clean()
         
         factors, err_history = func(engine, X, Xt, U, S, V, TrX, k=k, k2=k2, max_iter=max_iter, min_iter=min_iter, verbose=verbose)
-        print("Task (%s, k=%dx%d) finished in:" % (technique, k, k2), time.time()-t0)
+        runtime = time.time()-t0
+        print("Task (%s, k=%dx%d) finished in:" % (technique, k, k2), runtime)
         if engine.profile and verbose:
             print("Engine Mflops/iteration:", float(engine.operations/max_iter)/1000000, float(engine.soperations/max_iter)/1000000)
             print("Engine timer:", str(engine.timer))
-        #print("Engine timer:", str(engine.timer))
+        
         validate_factors(factors)
         
         if params['store_history']:
             dump_history(params, err_history[1:])
+            dump_runtime(params, runtime)
         
         if params['store_results']:
             dump_file('../results/%s/%s.pkl' % (params['label'], technique), factors)

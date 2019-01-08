@@ -15,6 +15,7 @@ import numpy as np
 from matplotlib import ticker
 
 IMG_DIR = 'img'
+USE_LATEX = False
 
 def order_frame(df, order=None):
     if order:
@@ -30,7 +31,7 @@ def matplotlib_plot(datasets, frames, best_lines, filename=None, labels=None, x=
     sns.set_context("paper", font_scale=1)
     sns.set(style="whitegrid")#, font_scale=1.0)
     
-    matplotlib.rcParams['text.usetex'] = False
+    matplotlib.rcParams['text.usetex'] = USE_LATEX
     matplotlib.rcParams['lines.linewidth'] = 2.0
 
     sns.set_style('ticks', {'xtick.major.size': 5.0, 'xtick.minor.size': 5.0, 'ytick.major.size': 5.0, 'ytick.minor.size': 5.0})
@@ -54,7 +55,7 @@ def matplotlib_plot(datasets, frames, best_lines, filename=None, labels=None, x=
         #ax = axes[I,J]
         ax = axes[I,J]
 
-        if dataname in ['Mutations', 'MovieLens']:
+        if dataname in ['STRING', 'MovieLens']:
             handles = []
         ylim0 = 1.0
         ylim1 = 0.0
@@ -132,12 +133,12 @@ def matplotlib_plot(datasets, frames, best_lines, filename=None, labels=None, x=
             if technique == 'ALS':
                 ax.fill_between(x,CIS0,CIS1,alpha=0.2, color='y')
                 hand, = ax.plot(range(1,len(EST)+1),EST,label=technique, color=colors[technique])
-                if dataname in ['Mutations', 'MovieLens']:
+                if dataname in ['STRING', 'MovieLens']:
                     handles.append(hand)
             else:
                 ax.fill_between(x,CIS0,CIS1,alpha=0.2, color=colors[technique])
                 hand, = ax.plot(range(1,len(EST)+1),EST,label=technique, color=colors[technique])
-                if dataname in ['Mutations', 'MovieLens']:
+                if dataname in ['STRING', 'MovieLens']:
                     handles.append(hand)
             #ax.margins(x=0.2)
             
@@ -181,7 +182,7 @@ def matplotlib_plot2(frames, datasets, klist, filename=None, labels=None, x='Fac
     sns.set_context("paper", font_scale=1)
     sns.set(style="whitegrid")#, font_scale=1.0)
     
-    matplotlib.rcParams['text.usetex'] = True
+    matplotlib.rcParams['text.usetex'] = USE_LATEX
     matplotlib.rcParams['lines.linewidth'] = 2.0
         
     #sns.set_context('paper', font_scale=1) 

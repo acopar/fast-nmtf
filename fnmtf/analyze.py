@@ -32,6 +32,8 @@ def load_hist(dataset, technique, k, seed):
     return hist
 
 max_iter = 50000
+EPSILON=6
+MIN_ITER=100
 
 titles = {"aldigs": "AlphaDigit", "mutations": "Mutations", "retina": "Retina", "coil20": "Coil20", 
         "newsgroups": "Newsgroups", "movielens": "MovieLens", "string": "STRING"}
@@ -40,13 +42,13 @@ titles = {"aldigs": "AlphaDigit", "mutations": "Mutations", "retina": "Retina", 
 technique_map = {'MUR': 'mu', 'ALS': 'als', 'PG': 'pg', 
     'COD': 'cod'}
     
-datasets = ['aldigs', 'mutations', 'newsgroups', 'movielens', 'string', 'coil20']
+datasets = ['aldigs', 'coil20', 'string', 'movielens', 'mutations', 'newsgroups']
 
 mmap2 = {'mu': 'MUR', 'als': 'ALS', 'pg': 'PG', 'cod': 'COD'}
-seed_list = [0] 
+seed_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 # to include averages over 10 random initializations use the following line:
-# seed_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+# seed_list = c[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 def stat_convergence(k=20):
     frames = {}
@@ -73,7 +75,7 @@ def stat_convergence(k=20):
                 if hist is None:
                     continue
                 
-                sco10 = score_history2(hist, stop='p10', epsilon=6)
+                sco10 = score_history2(hist, stop='p10', epsilon=EPSILON)
                 if sco10 == -1:
                     print("Experiment did not converge in the specified number of iterations", 
                         (technique, dataset, 'k=%d' % k, 'seed=%d' % seed))
@@ -137,8 +139,8 @@ def stat_rank():
                         score[technique] = []
                     wait = 0
                     if dataset in ['newsgroups', 'string', 'coil20'] and technique_name == 'mu':
-                        wait = 90
-                    sco10 = score_history2(hist, stop='p10', epsilon=6, wait=wait)
+                        wait = MIN_ITER
+                    sco10 = score_history2(hist, stop='p10', epsilon=EPSILON, wait=MIN_ITER)
                     if sco10 == -1:
                         print("Experiment did not converge in the specified number of iterations", 
                             (technique, dataset, 'k=%d' % k, 'seed=%d' % seed))

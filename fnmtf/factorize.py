@@ -37,7 +37,7 @@ def main():
     parser.add_argument('-k2', '--k2', default='', help="Factorization rank (column dimension)")
     parser.add_argument('-p', '--parallel', type=int, default=-1, help="Number of MKL threads, max=nproc/2")
     parser.add_argument('-S', '--seed', default='0', help="Random seed")
-    parser.add_argument('-e', '--epsilon', default=6, 
+    parser.add_argument('-e', '--epsilon', default=6, type=int,
         help="Convergence criteria: relative difference in function is less than 10^(-epsilon)")
     
     parser.add_argument('-V', '--verbose', action="store_true", help="Print error function in each iteration")
@@ -107,8 +107,8 @@ def main():
             for seed in seed_list:
                 params = {'engine': engine, 'X': X, 'k': k, 'k2': k2, 
                     'seed': seed, 'method': 'nmtf', 'technique': t, 
-                    'max_iter': max_iter, 'min_iter': min_iter, 
-                    'verbose': args.verbose, 'store_history': True, 'store_results': True, 
+                    'max_iter': max_iter, 'min_iter': min_iter, 'epsilon': args.epsilon,
+                    'verbose': args.verbose, 'store_history': True, 'store_results': False, 
                     'basename': basedata, 'label': "%s" % basedata}
                 function_dict[t](params)
 

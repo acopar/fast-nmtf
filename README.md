@@ -43,13 +43,19 @@ The following optimization techniques can be set with option ``-t``.:
 
 ### Reproduce results ###
 
-To run the experiment, where each dataset is run on each of the optimization techniques, run the following commands. This may take hours or even days depending on your configuration.
+To exactly reproduce the experiments, where each dataset is run ten times on each of the optimization techniques, run the following command. This may take days depending on your configuration.
 
 ```sh
     bash scripts/full.sh
 ```
 
-There is a shorter version of the experiments, which has lower threshould for convergence (epsilon=10^-5), max iterations set to 2000.
+Long test will evaluate convergence (using the same factorization rank=20). This will take hours to complete (less than 10 times faster compared to full test).
+
+```sh
+    bash scripts/long.sh
+```
+
+There is a shorter version of the experiments, which has a lower threshould for convergence (epsilon=10^-5), max iterations set to 2000. This test will complete in a few hours.
 
 ```sh
    bash scripts/short.sh
