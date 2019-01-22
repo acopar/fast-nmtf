@@ -58,13 +58,12 @@ Long test will evaluate convergence (using the same factorization rank=20). This
 There is a shorter version of the experiments, which has a lower threshould for convergence (epsilon=10^-5), max iterations set to 2000. This test will complete in a few hours.
 
 ```sh
-   bash scripts/short.sh
+    bash scripts/short.sh
 ```
 
 After the experiments are done, you can visualize the output using the following two commands:
 
 ```sh
-    python fnmtf/analyze.py
     python fnmtf/visualize.py
 ```
 

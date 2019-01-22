@@ -29,6 +29,17 @@ def pprint(X):
         print(s)
 
 def main():
+    #### Command line arguments
+
+    # -t [arg]: Optimization technique [mu, als, pg, cod]
+    # -s: Use sparse matrices
+    # -k [arg]: factorization rank, positive integer
+    # -p [arg]: number of parallel workers
+    # -S [arg]: random seed
+    # -e [arg]: stopping criteria threshould (higher means more iterations), default=6
+    # -m [arg]: minimum number of iterations
+    # data: last argument is path to the dataset (required)
+    
     parser = argparse.ArgumentParser(description='fast-nmtf')
     parser.add_argument('-i', '--iterations', type=int, default=20, help="Maximum number of iterations.")
     parser.add_argument('-m', '--min-iter', type=int, default=-1, help="Specify minimum number of iterations.")
@@ -45,6 +56,7 @@ def main():
     
     args = parser.parse_args()
     
+    # read and parse data
     filename = args.data[0]
     data = load_data(filename)
     if data is None:
@@ -61,6 +73,8 @@ def main():
     # double
     X = X.astype(np.float64)
     
+    # set global seed
+    # additional seed parameter will be used just before the initialization
     np.random.seed(0)
     max_iter = args.iterations
     
@@ -83,9 +97,9 @@ def main():
         k2_list = [int(s) for s in args.k2.split(',')]
     seed_list = [int(s) for s in args.seed.split(',')]
     
+    # Initialize standard CPU engine
     engine = Engine(epsilon=args.epsilon, parallel=args.parallel)
     
-    conv_trace = {}
     for t in technique_list:
         if t not in function_dict:
             print("Technique %s is not available" % t)
@@ -98,7 +112,6 @@ def main():
         elif min_iter == -1:
             min_iter = 1
         
-        conv_trace[t] = []
         for ik, k in enumerate(k_list):
             if k2_list == None:
                 k2 = k
@@ -110,6 +123,9 @@ def main():
                     'max_iter': max_iter, 'min_iter': min_iter, 'epsilon': args.epsilon,
                     'verbose': args.verbose, 'store_history': True, 'store_results': False, 
                     'basename': basedata, 'label': "%s" % basedata}
+                    
+                # Run the factiorization
+                # depending on the input, mu, cod, als or pg is used
                 function_dict[t](params)
 
 

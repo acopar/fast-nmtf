@@ -1,21 +1,21 @@
 #!/usr/bin/env python
 
-import time
-
 from common import *
 
 @tri_factorization
 def nmtf_cod(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, min_iter=1, verbose=False):
+    # This function calculates NMTF with Coordinate descent optimization technique
+    # return value:
+    # factors: list of numpy arrays in order: [U, S, V]
+    # err_history: list of floats
+    
     n = X.shape[0]
     m = X.shape[1]
     err_history = []
     globals().update(engine.methods())
-    timer = Timer()
     for it in range(max_iter):
         # error
-        timer.split('XV')
         XV = bigdot(X, V)
-        timer.split('error')
         T2 = dot(XV.T, U)
         T3 = dot(S, T2)
         tr2 = np.trace(T3)
@@ -28,8 +28,7 @@ def nmtf_cod(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, min_iter=1, 
         if verbose:
             print("Error", E)
         
-        
-        timer.split('U')
+        # Update U factor matrix    
         KM5 = dot(S, V.T)
         NK13 = dot(XV, S.T)
         KK14 = dot(KM5, KM5.T)
@@ -41,37 +40,24 @@ def nmtf_cod(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, min_iter=1, 
             NA31 = sub(NK13[:,i], NA30)
             NA32 = divide(NA31, AK16[:,i])
             NA33 = add(U[:,i], NA32)
-            
-            #NA34 = project(NA33)
-            #U[:,i] = NA34.ravel()
             project_to(NA33, U, i)
         
-        timer.split('U cod')
-        #cod_u(U, KK14, NK13, AK16)
-        
-        timer.split('Xt')
+        # Update V factor matrix
         MK17 = bigdot(Xt, U)
-        
-        timer.split('V')
         ML18 = dot(MK17, S)
         NL19 = dot(U, S)
         LL20 = dot(NL19.T, NL19)
         NL21 = multiply(NL19, NL19)
         AL22 = vsum(NL21)
         
-        #ML30 = dot(V, LL20)
-        timer.split('V cod')
         for i in range(k2):
             MA30 = dot(V, LL20[:,i])
             MA31 = sub(ML18[:,i], MA30)
             MA32 = divide(MA31, AL22[:,i])
             MA33 = add(V[:,i], MA32)
-            #MA34 = project(MA33)
-            #V[:,i] = MA34.ravel()
             project_to(MA33, V, i)
         
-        
-        timer.split('S')
+        # Update S factor matrix
         KL23 = dot(MK17.T, V)
         KK24 = dot(U.T, U)
         LL25 = dot(V.T, V)
@@ -80,8 +66,9 @@ def nmtf_cod(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, min_iter=1, 
         ML28 = multiply(V, V)
         AL29 = vsum(ML28)
         
-        timer.split('S cod')
         cod_s(S, KK24, LL25, KL23, AK27, AL29)
+        
+        # cod_s is a faster cython implementation of to the following python code
         """
         for i in range(k):
             for j in range(k2):
@@ -95,11 +82,10 @@ def nmtf_cod(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, min_iter=1, 
                 S[i,j] = AA36
         """
         
+        # Check convergence
         if check_stop(err_history) > 0:
             print("Stopping after %d iterations" % it)
             break
     
-    if verbose:
-        print(str(timer))
     factors = U, S, V
     return factors, err_history

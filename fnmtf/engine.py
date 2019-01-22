@@ -15,6 +15,8 @@ EPSILON = np.finfo(np.float64).eps
 MAXILON = 10**(9)
 
 class Engine():
+    # This is a wrapper class for numpy and matrix operations
+    
     def __init__(self, stop='p10', epsilon=6, parallel=-1):
         self.stop = stop
         self.epsilon = epsilon

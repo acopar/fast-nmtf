@@ -1,21 +1,23 @@
 #!/usr/bin/env python
 
-import time
-import numpy as np
-
 from common import *
+
 
 @tri_factorization
 def nmtf_als(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, min_iter=1, verbose=False):
+    # This function calculates NMTF with Alternating least squares optimization technique
+    # return value:
+    # factors: list of numpy arrays in order: [U, S, V]
+    # err_history: list of floats
+    
     err_history = []
     globals().update(engine.methods())
-    timer = Timer()
     try:
         for it in range(max_iter):
             # error
-            timer.split('XV')
             XV = bigdot(X, V)
-            timer.split('error')
+            
+            # Calculate objective function
             T2 = dot(XV.T, U)
             T3 = dot(S, T2)
             tr2 = trace(T3)
@@ -28,7 +30,7 @@ def nmtf_als(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, min_iter=1, 
             if verbose:
                 print("Error", E)
             
-            timer.split('U')
+            # Update U factor matrix
             KM5 = dot(S, V.T)
             NK13 = dot(XV, S.T)
             KK14 = dot(KM5, KM5.T)
@@ -36,9 +38,8 @@ def nmtf_als(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, min_iter=1, 
             NK16 = dot(NK13, KK15)
             U = project(NK16)
             
-            timer.split('Xt')
+            # Update V factor matrix
             MK18 = bigdot(Xt, U)
-            timer.split('V')
             ML19 = dot(MK18, S)
             KK20 = dot(U.T, U)
             LK21 = dot(S.T, KK20)
@@ -46,8 +47,8 @@ def nmtf_als(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, min_iter=1, 
             LL23 = inverse(LL22)
             ML24 = dot(ML19, LL23)
             V = project(ML24)
-            
-            timer.split('S')
+        
+            # Update S factor matrix    
             KK26 = inverse(KK20)
             KL27 = dot(MK18.T, V)
             LL28 = dot(V.T, V)
@@ -63,7 +64,5 @@ def nmtf_als(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, min_iter=1, 
     except ValueError:
         print("Warning: ValueError caught")
     
-    if verbose:
-        print("Timer", str(timer))
     factors = U, S, V
     return factors, err_history

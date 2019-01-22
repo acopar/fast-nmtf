@@ -27,7 +27,7 @@ def dump_history(params, err_history):
     fp.close()
 
 def dump_runtime(params, runtime):
-    filename = 'results/%s/%s/%d_%d.csv' % (params['label'], params['technique'], params['k'], params['seed'])
+    filename = 'results/%s/%s/%d_%d.time' % (params['label'], params['technique'], params['k'], params['seed'])
     ensure_dir(filename)
     fp = open(filename, 'w')
     writer = csv.writer(fp, delimiter=',')
@@ -55,11 +55,14 @@ def tri_factorization(func):
         
         print("Task started: (technique=%s, k=%d, seed=%d)" % (technique, k, seed))
         
+        # random initialization
         np.random.seed(seed)
         n, m = X.shape
         U = nprand(n, k, dtype=X.dtype)
         S = nprand(k, k2, dtype=X.dtype)
         V = nprand(m, k2, dtype=X.dtype)
+        
+        # Calculate norm of input matrix X
         Xt = None
         if type(X) == csr_matrix:
             XX = X.power(2)
@@ -69,22 +72,26 @@ def tri_factorization(func):
             XX = np.multiply(X, X)
             TrX = np.sum(XX)
             Xt = np.array(X.T, order='C')
+        
+        
         t0 = time.time()
         engine.clean()
         
+        # Run factorization
         factors, err_history = func(engine, X, Xt, U, S, V, TrX, k=k, k2=k2, max_iter=max_iter, min_iter=min_iter, verbose=verbose)
         runtime = time.time()-t0
         print("Task (%s, k=%dx%d) finished in:" % (technique, k, k2), runtime)
-        if engine.profile and verbose:
-            print("Engine Mflops/iteration:", float(engine.operations/max_iter)/1000000, float(engine.soperations/max_iter)/1000000)
-            print("Engine timer:", str(engine.timer))
         
+        # Check if any values are below zero
+        # If not, non-negativity was not properly enforced
         validate_factors(factors)
         
+        # store history and runtime
         if params['store_history']:
             dump_history(params, err_history[1:])
             dump_runtime(params, runtime)
         
+        # store factors to use in further processing
         if params['store_results']:
             dump_file('../results/%s/%s.pkl' % (params['label'], technique), factors)
         
@@ -93,6 +100,7 @@ def tri_factorization(func):
 
 
 class Timer():
+    # Timer class for benchmarking purposes
     def __init__(self, system=True):
         self.t = {}
         self.c = {}

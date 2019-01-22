@@ -1,20 +1,20 @@
 #!/usr/bin/env python
 
-import numpy as np
-import scipy.linalg as la
-
 from common import *
+
 
 @tri_factorization
 def nmtf_pg(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, min_iter=1, verbose=False):
+    # This function calculates NMTF with Projected gradient optimization technique
+    # return value:
+    # factors: list of numpy arrays in order: [U, S, V]
+    # err_history: list of floats
+    
     err_history = []
     globals().update(engine.methods())
-    timer = Timer()
     
     for it in range(max_iter):
-        timer.split('XV')
         XV = bigdot(X, V)
-        timer.split('error')
         NK15 = dot(XV, S.T)
         KK16 = dot(NK15.T, U)
         tr2 = trace(KK16)
@@ -29,7 +29,7 @@ def nmtf_pg(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, min_iter=1, v
         if verbose:
             print("Error", E)
         
-        timer.split('U')
+        # Update U factor matrix
         NK22 = divide(U, NK20)
         NK23 = multiply(NK22, NK15)
         Pu = sub(U, NK23)
@@ -48,9 +48,8 @@ def nmtf_pg(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, min_iter=1, v
         NK20 = sub(U, NK23)
         U = project(NK20)
         
-        timer.split('Xt')
+        # Update V factor matrix
         MK28 = bigdot(Xt, U)
-        timer.split('V')
         NL14 = dot(U, S)
         KL24 = dot(U.T, NL14)
         ML26 = dot(KM19.T, KL24)
@@ -73,7 +72,7 @@ def nmtf_pg(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, min_iter=1, v
         ML26 = sub(V, ML29)
         V = project(ML26)
         
-        timer.split('S')
+        # Update S factor matrix
         KK16 = dot(U.T, U)
         LL31 = dot(V.T, V)
         KL32 = dot(KK16, S)
@@ -100,7 +99,5 @@ def nmtf_pg(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, min_iter=1, v
             print("Stopping after %d iterations" % it)
             break
 
-    if verbose:
-        print("Timer", str(timer))
     factors = U, S, V
     return factors, err_history
