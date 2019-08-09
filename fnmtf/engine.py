@@ -8,8 +8,8 @@ from ctypes import *
 import ctypes
 
 from loops import Sloop, cproject, cproject64, cproject_to64
-from common import Timer
-from stop import *
+from fnmtf.common import Timer
+from fnmtf.stop import *
 
 EPSILON = np.finfo(np.float64).eps
 MAXILON = 10**(9)

@@ -9,7 +9,7 @@ import numpy as np
 import scipy.linalg as la
 
 from scipy.sparse import csr_matrix, csc_matrix
-from loader import *
+from fnmtf.loader import *
 
 def nprand(x, y, dtype=np.float64, seed=42):
     X = np.random.rand(x, y)
@@ -93,7 +93,7 @@ def tri_factorization(func):
         
         # store factors to use in further processing
         if params['store_results']:
-            dump_file('../results/%s/%s.pkl' % (params['label'], technique), factors)
+            dump_file('results/%s/%s.pkl' % (params['label'], technique), factors)
         
         return factors, err_history
     return new_f

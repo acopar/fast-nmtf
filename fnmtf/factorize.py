@@ -9,14 +9,14 @@ import numpy as np
 import scipy.linalg as la
 
 from scipy.sparse import csr_matrix, csc_matrix
-from loader import *
-from common import *
-from engine import Engine
+from fnmtf.loader import *
+from fnmtf.common import *
+from fnmtf.engine import Engine
 
-from mu import nmtf_mu
-from pg import nmtf_pg
-from cod import nmtf_cod
-from als import nmtf_als
+from fnmtf.mu import nmtf_mu
+from fnmtf.pg import nmtf_pg
+from fnmtf.cod import nmtf_cod
+from fnmtf.als import nmtf_als
 
 def normalize_data(X):
     return X / np.max(X)

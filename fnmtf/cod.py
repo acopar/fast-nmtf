@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from common import *
+from fnmtf.common import *
 
 @tri_factorization
 def nmtf_cod(engine, X, Xt, U, S, V, TrX, k=20, k2=20, max_iter=10, min_iter=1, verbose=False):
