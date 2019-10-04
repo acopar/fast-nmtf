@@ -94,6 +94,10 @@ def tri_factorization(func):
         # store factors to use in further processing
         if params['store_results']:
             dump_file('results/%s/%s.pkl' % (params['label'], technique), factors)
+            U, S, V = factors
+            save_csv('results/%s/%s/U.csv' % (params['label'], technique), U)
+            save_csv('results/%s/%s/S.csv' % (params['label'], technique), S)
+            save_csv('results/%s/%s/V.csv' % (params['label'], technique), V)
         
         return factors, err_history
     return new_f

@@ -78,3 +78,14 @@ After the experiments are done, you can visualize the output using the following
 - -m [arg]: minimum number of iterations
 - data: last argument is path to the dataset (required)
 
+### Retrieve factors ###
+
+After the factorization is finished, U, S, and V factors are stored in ``results/<dataset>/<technique>/<factor>.csv``. For example, if you selected ``cod`` technique, the results can be viewed using the following commands, where U is left factor, S is middle factor and V is right factor.
+
+```sh
+    cat results/aldigs/cod/U.csv
+    cat results/aldigs/cod/S.csv
+    cat results/aldigs/cod/V.csv
+```
+
+For convenience, all three factors are also saved in ``results/aldigs/cod.pkl`` as a tuple of numpy matrices and can be loaded with ``load_file`` function provided in ``loader.py``.

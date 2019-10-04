@@ -121,7 +121,7 @@ def main():
                 params = {'engine': engine, 'X': X, 'k': k, 'k2': k2, 
                     'seed': seed, 'method': 'nmtf', 'technique': t, 
                     'max_iter': max_iter, 'min_iter': min_iter, 'epsilon': args.epsilon,
-                    'verbose': args.verbose, 'store_history': True, 'store_results': False, 
+                    'verbose': args.verbose, 'store_history': True, 'store_results': True,
                     'basename': basedata, 'label': "%s" % basedata}
                     
                 # Run the factiorization
